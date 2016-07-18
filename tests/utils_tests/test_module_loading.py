@@ -1,4 +1,6 @@
-import imp
+from __future__ import print_function
+
+import imp  # this needs to be loaded first
 import os
 import sys
 import unittest
@@ -184,25 +186,33 @@ class ProxyFinder(object):
     def __init__(self):
         self._cache = {}
 
-    def find_module(self, fullname, path=None):
-        tail = fullname.rsplit('.', 1)[-1]
-        try:
-            fd, fn, info = imp.find_module(tail, path)
-            if fullname in self._cache:
-                old_fd = self._cache[fullname][0]
-                if old_fd:
-                    old_fd.close()
-            self._cache[fullname] = (fd, fn, info)
-        except ImportError:
-            return None
-        else:
-            return self  # this is a loader as well
+    if not six.PY3:
+        def find_module(self, fullname, path=None):
+            print(fullname, path)
+            tail = fullname.rsplit('.', 1)[-1]
+            try:
+                fd, fn, info = imp.find_module(tail, path)
+                if fullname in self._cache:
+                    old_fd = self._cache[fullname][0]
+                    if old_fd:
+                        old_fd.close()
+                self._cache[fullname] = (fd, fn, info)
+            except ImportError:
+                return None
+            else:
+                return self  # this is a loader as well
+    else:
+        # this requires at least python 3.3
+        def find_spec(self, fullname, path=None):
+            print(fullname, path)
+            pass
 
     def load_module(self, fullname):
         if fullname in sys.modules:
             return sys.modules[fullname]
         fd, fn, info = self._cache[fullname]
         try:
+            # this should be exec_module in python 3
             return imp.load_module(fullname, fd, fn, info)
         finally:
             if fd:
