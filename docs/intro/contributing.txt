@@ -1,6 +1,6 @@
-===================================
-Writing your first patch for Django
-===================================
+=================================
+Quick Start Guide to Contributing
+=================================
 
 Introduction
 ============
@@ -54,12 +54,13 @@ By the end of this tutorial, you should have a basic understanding of both the
 tools and the processes involved. Specifically, we'll be covering the following:
 
 * Installing Git.
-* How to download a development copy of Django.
+* How to fork a copy of Django.
+* Creating a branch for your code.
 * Running Django's test suite.
-* Writing a test for your patch.
-* Writing the code for your patch.
-* Testing your patch.
-* Generating a patch file for your changes.
+* Writing a test for your pull request.
+* Writing the code for your pull request.
+* Testing your pull request.
+* Submitting a pull request for your contribution.
 * Where to look for more information.
 
 Once you're done with the tutorial, you can look through the rest of
@@ -114,8 +115,6 @@ The first step to contributing to Django is to get a copy of the source code.
 First, `fork Django on GitHub <https://github.com/django/django#fork-destination-box>`__.
 Then, from the command line, use the ``cd`` command to navigate to the
 directory where you'll want your local copy of Django to live.
-
-Download the Django source code repository using the following command:
 
 .. code-block:: console
 
@@ -204,6 +203,20 @@ previously cloned copy of Django:
 The installed version of Django is now pointing at your local copy. You will
 immediately see any changes you make to it, which is of great help when writing
 your first patch.
+
+Creating a branch for your code
+===============================
+
+Github's methodology recommends forking and configuring a tracking branch.
+It is recommended to name the branch to include the number of the ticket
+you're working on, or
+
+.. code-block:: console
+
+    $ git remote add upstream
+    $ git checkout -b ticket_24788
+
+In this tutorial, we are working on :ticket:`24788`.
 
 Rolling back to a previous revision of Django
 =============================================
@@ -497,12 +510,12 @@ the ``versionadded`` bit is all about, see
 an explanation of how to build a copy of the documentation locally, so you can
 preview the HTML that will be generated.
 
-Generating a patch for your changes
-===================================
+Submitting a pull request for your code
+=======================================
 
-Now it's time to generate a patch file that can be uploaded to Trac or applied
-to another copy of Django. To get a look at the content of your patch, run the
-following command:
+Now it's time to submit a pull request for your work so that it can be
+reviewed and merged into the official code base. Before submitting,
+you can see your changes with the following command.
 
 .. code-block:: console
 
@@ -516,100 +529,21 @@ Once you're done looking at the patch, hit the ``q`` key to exit back to the
 command line. If the patch's content looked okay, you can run the following
 command to save the patch file to your current working directory:
 
-.. code-block:: console
-
-    $ git diff > 24788.diff
-
-You should now have a file in the root Django directory called ``24788.diff``.
-This patch file contains all your changes and should look this:
-
-.. code-block:: diff
-
-    diff --git a/django/forms/forms.py b/django/forms/forms.py
-    index 509709f..d1370de 100644
-    --- a/django/forms/forms.py
-    +++ b/django/forms/forms.py
-    @@ -75,6 +75,7 @@ class BaseForm(object):
-         # information. Any improvements to the form API should be made to *this*
-         # class, not to the Form class.
-         field_order = None
-    +    prefix = None
-
-         def __init__(self, data=None, files=None, auto_id='id_%s', prefix=None,
-                      initial=None, error_class=ErrorList, label_suffix=None,
-    @@ -83,7 +84,8 @@ class BaseForm(object):
-             self.data = data or {}
-             self.files = files or {}
-             self.auto_id = auto_id
-    -        self.prefix = prefix
-    +        if prefix is not None:
-    +            self.prefix = prefix
-             self.initial = initial or {}
-             self.error_class = error_class
-             # Translators: This is the default suffix added to form field labels
-    diff --git a/docs/ref/forms/api.txt b/docs/ref/forms/api.txt
-    index 3bc39cd..008170d 100644
-    --- a/docs/ref/forms/api.txt
-    +++ b/docs/ref/forms/api.txt
-    @@ -1065,3 +1065,13 @@ You can put several Django forms inside one ``<form>`` tag. To give each
-         >>> print(father.as_ul())
-         <li><label for="id_father-first_name">First name:</label> <input type="text" name="father-first_name" id="id_father-first_name" /></li>
-         <li><label for="id_father-last_name">Last name:</label> <input type="text" name="father-last_name" id="id_father-last_name" /></li>
-    +
-    +The prefix can also be specified on the form class::
-    +
-    +    >>> class PersonForm(forms.Form):
-    +    ...     ...
-    +    ...     prefix = 'person'
-    +
-    +.. versionadded:: 1.9
-    +
-    +    The ability to specify ``prefix`` on the form class was added.
-    diff --git a/docs/releases/1.9.txt b/docs/releases/1.9.txt
-    index 5b58f79..f9bb9de 100644
-    --- a/docs/releases/1.9.txt
-    +++ b/docs/releases/1.9.txt
-    @@ -161,6 +161,9 @@ Forms
-       :attr:`~django.forms.Form.field_order` attribute, the ``field_order``
-       constructor argument , or the :meth:`~django.forms.Form.order_fields` method.
-
-    +* A form prefix can be specified inside a form class, not only when
-    +  instantiating a form. See :ref:`form-prefix` for details.
-    +
-     Generic Views
-     ^^^^^^^^^^^^^
-
-    diff --git a/tests/forms_tests/tests/test_forms.py b/tests/forms_tests/tests/test_forms.py
-    index 690f205..e07fae2 100644
-    --- a/tests/forms_tests/tests/test_forms.py
-    +++ b/tests/forms_tests/tests/test_forms.py
-    @@ -1671,6 +1671,18 @@ class FormsTestCase(SimpleTestCase):
-             self.assertEqual(p.cleaned_data['last_name'], 'Lennon')
-             self.assertEqual(p.cleaned_data['birthday'], datetime.date(1940, 10, 9))
-
-    +    def test_class_prefix(self):
-    +        # Prefix can be also specified at the class level.
-    +        class Person(Form):
-    +            first_name = CharField()
-    +            prefix = 'foo'
-    +
-    +        p = Person()
-    +        self.assertEqual(p.prefix, 'foo')
-    +
-    +        p = Person(prefix='bar')
-    +        self.assertEqual(p.prefix, 'bar')
-    +
-         def test_forms_with_null_boolean(self):
-             # NullBooleanField is a bit of a special case because its presentation (widget)
-             # is different than its data. This is handled transparently, though.
+Please note that for your work to be admitted, it's mandatory to submit a pull
+request for your work using ``rebase`` such that there are ``Merge``-commits
+in your work. The recommended pattern for a commit messages contains a
+reference to the ticket number, and a small recap of what problem the ticket
+addresses. Please submit only a single commit for each ticket.
+:ref:`commit message guidelines <committing-guidelines>`
 
 So what do I do next?
 =====================
 
 Congratulations, you've generated your very first Django patch! Now that you've
 got that under your belt, you can put those skills to good use by helping to
-improve Django's codebase. Generating patches and attaching them to Trac
-tickets is useful, however, since we are using git - adopting a more :doc:`git
+improve Django's codebase. Submitting pull requests and linking it to the
+associated Trac ticket is simply done by referencing the ticket number in the
+pull request. adopting a more :doc:`git
 oriented workflow </internals/contributing/writing-code/working-with-git>` is
 recommended.
 
