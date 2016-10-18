@@ -630,6 +630,7 @@ class Model(metaclass=ModelBase):
             return getattr(self, field_name)
         return getattr(self, field.attname)
 
+    # TODO check here for upsert hack
     def save(self, force_insert=False, force_update=False, using=None,
              update_fields=None):
         """

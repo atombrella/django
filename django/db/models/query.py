@@ -382,7 +382,7 @@ class QuerySet:
         """
         obj = self.model(**kwargs)
         self._for_write = True
-        obj.save(force_insert=True, using=self.db)
+        obj.save(force_insert=True, using=self.db, upsert=None)
         return obj
 
     def _populate_pk_values(self, objs):

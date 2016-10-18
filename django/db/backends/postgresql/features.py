@@ -43,6 +43,10 @@ class DatabaseFeatures(BaseDatabaseFeatures):
         return self.connection.pg_version >= 90500
 
     @cached_property
+    def has_insert_on_conflict(self):
+        return self.connection.pg_version >= 90500
+
+    @cached_property
     def has_jsonb_datatype(self):
         return self.connection.pg_version >= 90400
 

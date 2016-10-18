@@ -266,6 +266,10 @@ Database backends
   switch from MySQL's default level, repeatable read, to read committed.
 
 * Added support for ``cx_Oracle`` 5.3.
+* MySQL, SQLite3, Oracle and PostgreSQL all support additional clauses
+  to the ``INSERT`` syntax. The syntax is different in all four backends
+  but the functionality is equivalent. PostgreSQL introduced this in 9.5+,
+  SQLite
 
 Email
 ~~~~~

@@ -10,7 +10,16 @@ class SQLCompiler(compiler.SQLCompiler):
 
 
 class SQLInsertCompiler(compiler.SQLInsertCompiler, SQLCompiler):
-    pass
+    def as_sql(self):
+        """
+        The default SQL required for the
+        """
+        if self.connection.features.supports_on_conflict:
+            pass
+        return super(SQLInsertCompiler, self).as_sql()
+
+    def assemble_as_sql(self, fields, value_rows):
+        return super().assemble_as_sql(fields, value_rows)
 
 
 class SQLDeleteCompiler(compiler.SQLDeleteCompiler, SQLCompiler):

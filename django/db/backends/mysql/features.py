@@ -47,6 +47,14 @@ class DatabaseFeatures(BaseDatabaseFeatures):
         return self._mysql_storage_engine != 'MyISAM'
 
     @cached_property
+    def supports_on_duplicate_key(self):
+        """
+        Support for ON DUPLICATE KEY was introduced in 5.5.24, and available for
+        all other storage engines than MyISAM.
+        """
+        return self.connection.mysql_version >= (5, 5, 24) and self._mysql_storage_engine != 'MyISAM'
+
+    @cached_property
     def supports_microsecond_precision(self):
         return self.connection.mysql_version >= (5, 6, 4)
 
