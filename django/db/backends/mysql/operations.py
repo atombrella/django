@@ -1,4 +1,4 @@
-from __future__ import unicode_literals
+from __future__ import unicode_literals, division
 
 import uuid
 
@@ -94,8 +94,15 @@ class DatabaseOperations(BaseDatabaseOperations):
             return "TIME(%s)" % (field_name)
 
     def date_interval_sql(self, timedelta):
-        return "INTERVAL '%d 0:0:%d:%d' DAY_MICROSECOND" % (
-            timedelta.days, timedelta.seconds, timedelta.microseconds), []
+        # refs #24959 - handle timedelta if it's negative or plus
+        if timedelta.days < 0 or timedelta.seconds < 0:
+            return "INTERVAL '-0 0:0:%d:0' DAY_MICROSECOND" % (
+                abs(timedelta.total_seconds())  # needs to be minutes
+            ), []
+        else:
+            return "INTERVAL '%d 0:0:%d:%d' DAY_MICROSECOND" % (
+                timedelta.days, timedelta.seconds, timedelta.microseconds,
+            ), []
 
     def format_for_duration_arithmetic(self, sql):
         if self.connection.features.supports_microsecond_precision:

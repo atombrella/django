@@ -455,6 +455,7 @@ def _sqlite_format_dtdelta(conn, lhs, rhs):
         real_lhs = parse_duration(lhs)
         if real_lhs is None:
             real_lhs = backend_utils.typecast_timestamp(lhs)
+            print(real_lhs, lhs, rhs)
         if isinstance(rhs, six.integer_types):
             rhs = str(decimal.Decimal(rhs) / decimal.Decimal(1000000))
         real_rhs = parse_duration(rhs)

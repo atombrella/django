@@ -21,7 +21,7 @@ from django.db.models.functions import (
 from django.db.models.sql import constants
 from django.db.models.sql.datastructures import Join
 from django.test import TestCase, skipIfDBFeature, skipUnlessDBFeature
-from django.test.utils import Approximate
+from django.test.utils import Approximate, CaptureQueriesContext
 from django.utils import six
 
 from .models import (
@@ -1042,6 +1042,32 @@ class FTimeDeltaTests(TestCase):
             completed__gt=self.stime + F('estimated_time'),
         ).order_by('name')
         self.assertQuerysetEqual(over_estimate, ['e3', 'e4'], lambda e: e.name)
+
+    def test_negative_timedelta_update_days(self):
+        # Ticket #24959 - Negative timedelta makes incorrect query on MySQL
+        with CaptureQueriesContext(connection=connection) as capture:
+            Experiment.objects.filter(name='e0').update(start=F('assigned') + datetime.timedelta(days=-2))
+            print(capture.captured_queries)
+            e0 = Experiment.objects.get(name='e0')
+            print(e0.assigned, e0.completed, e0.start)
+
+            # Experiment.objects.filter(name='e0').update(start=F('assigned') + datetime.timedelta(seconds=-3))
+            # print(capture.captured_queries)
+            #
+            Experiment.objects.filter(name='e0').update(start=F('assigned') + datetime.timedelta(hours=-3))
+            print(capture.captured_queries[-1])
+
+        self.assertTrue(True)
+        self.assertEqual(e0.assigned, datetime.date(2010, 6, 24))
+
+    def test_negative_timedelta_update_seconds(self):
+        # Ticket #24959 - Negative timedelta makes incorrect query on MySQL
+        with CaptureQueriesContext(connection=connection) as capture:
+            Experiment.objects.filter(name='e0').update(start=F('assigned') + datetime.timedelta(seconds=-3600))
+            print(capture.captured_queries)
+            e0 = Experiment.objects.get(name='e0')
+            print(e0.assigned, e0.completed, e0.start)
+
 
 
 class ValueTests(TestCase):
