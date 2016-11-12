@@ -1046,19 +1046,19 @@ class FTimeDeltaTests(TestCase):
     def test_negative_timedelta_update_days(self):
         # Ticket #24959 - Negative timedelta makes incorrect query on MySQL
         with CaptureQueriesContext(connection=connection) as capture:
-            Experiment.objects.filter(name='e0').update(start=F('assigned') + datetime.timedelta(days=-2))
-            print(capture.captured_queries)
+            Experiment.objects.filter(name='e0').update(start=F('assigned') + datetime.timedelta(days=-1))
+            # print(capture.captured_queries)
             e0 = Experiment.objects.get(name='e0')
-            print(e0.assigned, e0.completed, e0.start)
+            print(capture.captured_queries)
+            print("hello", e0.assigned, e0.completed, e0.start)
 
             # Experiment.objects.filter(name='e0').update(start=F('assigned') + datetime.timedelta(seconds=-3))
             # print(capture.captured_queries)
             #
-            Experiment.objects.filter(name='e0').update(start=F('assigned') + datetime.timedelta(hours=-3))
-            print(capture.captured_queries[-1])
+            # Experiment.objects.filter(name='e0').update(start=F('assigned') + datetime.timedelta(hours=-3))
+            # print(capture.captured_queries[-1])
 
-        self.assertTrue(True)
-        self.assertEqual(e0.assigned, datetime.date(2010, 6, 24))
+        self.assertEqual(e0.start, datetime.date(2010, 6, 24))
 
     def test_negative_timedelta_update_seconds(self):
         # Ticket #24959 - Negative timedelta makes incorrect query on MySQL
