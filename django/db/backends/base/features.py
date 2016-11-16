@@ -231,6 +231,10 @@ class BaseDatabaseFeatures(object):
     # Place FOR UPDATE right after FROM clause. Used on MSSQL.
     for_update_after_from = False
 
+    # Supports extract from DurationField (underlying datatype of this field
+    # differs among backends)
+    supports_extract_durationfield = False
+
     def __init__(self, connection):
         self.connection = connection
 

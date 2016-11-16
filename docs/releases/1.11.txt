@@ -446,6 +446,9 @@ Database backend API
   which is deprecated. Custom database backends should ensure all types of
   indexes are returned by ``DatabaseIntrospection.get_constraints()``.
 
+* The new flag ``supports_extract_durationfield`` is used to indicate support of
+  :meth:`Extract` from :ref:`DurationField`.
+
 Dropped support for PostgreSQL 9.2 and PostGIS 2.0
 --------------------------------------------------
 

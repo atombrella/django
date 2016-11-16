@@ -56,3 +56,12 @@ class DTModel(models.Model):
 
     def __str__(self):
         return 'DTModel({0})'.format(self.name)
+
+
+@python_2_unicode_compatible
+class SpeedTestModel(models.Model):
+    duration_in_seconds = models.DurationField(blank=False, null=False)
+    distance_in_meters = models.IntegerField(blank=False, null=False)
+
+    def __str__(self):
+        return '{}/{}'.format(self.distance_in_meters, self.duration_in_seconds)

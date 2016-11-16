@@ -6,7 +6,9 @@ import pytz
 
 from django.conf import settings
 from django.db import connection
-from django.db.models import DateField, DateTimeField, IntegerField, TimeField
+from django.db.models import (DateField, DateTimeField, IntegerField,
+    TimeField, F, FloatField, Sum, Value,
+)
 from django.db.models.functions import (
     Extract, ExtractDay, ExtractHour, ExtractMinute, ExtractMonth,
     ExtractSecond, ExtractWeek, ExtractWeekDay, ExtractYear, Trunc, TruncDate,
@@ -14,9 +16,9 @@ from django.db.models.functions import (
     TruncYear,
 )
 from django.test import TestCase, override_settings
+from django.test import skipUnlessDBFeature
 from django.utils import timezone
-
-from .models import DTModel
+from .models import DTModel, SpeedTestModel
 
 
 def microsecond_support(value):
@@ -706,6 +708,28 @@ class DateFunctionTests(TestCase):
 
         with self.assertRaisesMessage(ValueError, "Cannot truncate DateField 'start_date' to DateTimeField"):
             list(DTModel.objects.annotate(truncated=TruncSecond('start_date', output_field=DateField())))
+
+    @skipUnlessDBFeature('supports_extract_durationfield')
+    def test_extract_duration(self):
+        # #27473 -- allow extract on DurationField
+        # test set inspired by a few physics example
+        print("hello")
+        SpeedTestModel.objects.create(distance_in_meters=2500, duration_in_seconds=)
+        SpeedTestModel.objects.create(distance_in_meters=2500, duration_in_seconds=94)
+        SpeedTestModel.objects.create(distance_in_meters=2500, duration_in_seconds=94)
+        SpeedTestModel.objects.create(distance_in_meters=2500, duration_in_seconds=94)
+
+        qs = SpeedTestModel.objects.annotate(
+            speed=Sum(
+                F('distance_in_meters') * Value(3.6) /
+                Extract(F('duration_in_seconds'), 'epoch'),
+                output_field=FloatField()),
+        )
+        print(list(qs))
+        self.assertEqual(True, True)
+        # self.assertQuerysetEqual(qs, [
+        #     (),
+        # ], lambda x: (x.distance_in_meters, x.duration_in_seconds, x.speed),)
 
 
 @override_settings(USE_TZ=True, TIME_ZONE='UTC')
