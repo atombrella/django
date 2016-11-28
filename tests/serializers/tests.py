@@ -348,6 +348,13 @@ class SerializersTestBase(object):
         self.assertEqual(base_data, proxy_data.replace('proxy', ''))
         self.assertEqual(base_data, proxy_proxy_data.replace('proxy', ''))
 
+    def test_repr(self):
+        AuthorProfile.objects.create(author=self.joe, date_of_birth=datetime(1970, 1, 1))
+        serial_str = serializers.serialize(self.serializer_name, AuthorProfile.objects.all())
+
+        for obj in serializers.deserialize(self.serializer_name, serial_str):
+            self.assertEqual(repr(obj), '<DeserializedObject: serializers.AuthorProfile(pk=%s)>' % obj.object.pk)
+
 
 class SerializerAPITests(SimpleTestCase):
 
