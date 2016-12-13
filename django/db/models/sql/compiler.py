@@ -425,6 +425,7 @@ class SQLCompiler(object):
                 result.append('WHERE %s' % where)
                 params.extend(w_params)
 
+            # need to hack here
             grouping = []
             for g_sql, g_params in group_by:
                 grouping.append(g_sql)

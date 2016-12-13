@@ -162,6 +162,8 @@ class Query(object):
         #  - True: group by all select fields of the model
         # See compiler.get_group_by() for details.
         self.group_by = None
+        # This flag indicates whether to do rollup on the aggregation
+        self.group_by_rollup = False
         self.order_by = []
         self.low_mark, self.high_mark = 0, None  # Used for offset/limit
         self.distinct = False
@@ -282,6 +284,7 @@ class Query(object):
             obj.group_by = True
         else:
             obj.group_by = self.group_by[:]
+        obj.group_by_rollup = self.group_by_rollup
         obj.order_by = self.order_by[:]
         obj.low_mark, obj.high_mark = self.low_mark, self.high_mark
         obj.distinct = self.distinct

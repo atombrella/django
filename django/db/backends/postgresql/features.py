@@ -44,3 +44,15 @@ class DatabaseFeatures(BaseDatabaseFeatures):
     @cached_property
     def has_jsonb_agg(self):
         return self.connection.pg_version >= 90500
+
+    @cached_property
+    def supports_cube(self):
+        return self.connection.pg_version >= 90400
+
+    @cached_property
+    def supports_grouping_sets(self):
+        return self.connection.pg_version >= 90400
+
+    @cached_property
+    def supports_rollup_operation(self):
+        return self.connection.pg_version >= 90400

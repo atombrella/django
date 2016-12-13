@@ -495,6 +495,11 @@ class AggregateTestCase(TestCase):
         vals = Book.objects.annotate(num_authors=Count("authors__id")).aggregate(Avg("num_authors"))
         self.assertEqual(vals, {"num_authors__avg": Approximate(1.66, places=1)})
 
+    def test_aggregate_annotation_rollup(self):
+        vals = Book.objects.annotate(num_authors=Count("authors__id")).rollup()
+        print(vals.query)
+        self.assertTrue(True)
+
     def test_avg_duration_field(self):
         # Explicit `output_field`.
         self.assertEqual(

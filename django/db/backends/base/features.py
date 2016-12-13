@@ -230,6 +230,11 @@ class BaseDatabaseFeatures(object):
     # Place FOR UPDATE right after FROM clause. Used on MSSQL.
     for_update_after_from = False
 
+    # Support for ROLLUP, CUBE and GROUPING SETS
+    supports_rollup_operation = False
+    supports_cube = False
+    supports_grouping_sets = False
+
     def __init__(self, connection):
         self.connection = connection
 

@@ -868,6 +868,15 @@ class QuerySet(object):
             clone._prefetch_related_lookups.extend(lookups)
         return clone
 
+    def rollup(self):
+        """
+        Returns a new QuerySet instance that includes more
+        """
+        obj = self._clone()
+        obj.query.group_by_rollup = True
+        obj.query.set_group_by()
+        return obj
+
     def annotate(self, *args, **kwargs):
         """
         Return a query set in which the returned objects have been annotated

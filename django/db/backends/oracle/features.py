@@ -36,6 +36,10 @@ class DatabaseFeatures(BaseDatabaseFeatures):
     # does by uppercasing all identifiers.
     ignores_table_name_case = True
 
+    supports_cube = True
+    supports_grouping_sets = True
+    supports_rollup_operation = True
+
     def introspected_boolean_field_type(self, field=None, created_separately=False):
         """
         Some versions of Oracle -- we've seen this on 11.2.0.1 and suspect
