@@ -10,9 +10,9 @@ class BrinIndex(Index):
 
     def __init__(self, fields=[], name=None, pages_per_range=None):
         if pages_per_range is not None and not (isinstance(pages_per_range, int) and pages_per_range > 0):
-            raise ValueError('pages_per_range must be None or a positive integer for BRIN indexes')
+            raise ValueError('pages_per_range must be None or a positive integer')
         self.pages_per_range = pages_per_range
-        return super(BrinIndex, self).__init__(fields, name)
+        super(BrinIndex, self).__init__(fields, name)
 
     def __repr__(self):
         if self.pages_per_range is not None:
