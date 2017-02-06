@@ -1,7 +1,9 @@
+from psycopg2.extensions import adapt
 from psycopg2.extras import Inet
 
 from django.conf import settings
 from django.db.backends.base.operations import BaseDatabaseOperations
+from django.utils.encoding import force_text
 
 
 class DatabaseOperations(BaseDatabaseOperations):
@@ -241,6 +243,9 @@ class DatabaseOperations(BaseDatabaseOperations):
         placeholder_rows_sql = (", ".join(row) for row in placeholder_rows)
         values_sql = ", ".join("(%s)" % sql for sql in placeholder_rows_sql)
         return "VALUES " + values_sql
+
+    def adapt_param(self, param):
+        return force_text(adapt(param).getquoted())
 
     def adapt_datefield_value(self, value):
         return value

@@ -436,6 +436,12 @@ class BaseDatabaseOperations:
         """
         return value
 
+    def adapt_param(self, param):
+        """
+        Returns adapted version of parameter.
+        """
+        return param
+
     def adapt_unknown_value(self, value):
         """
         Transforms a value to something compatible with the backend driver.
