@@ -245,7 +245,8 @@ class ActionSelenium(argparse.Action):
 
 
 def django_tests(verbosity, interactive, failfast, keepdb, reverse,
-                 test_labels, debug_sql, parallel, tags, exclude_tags):
+                 test_labels, debug_sql, parallel, tags, exclude_tags,
+                 buffer):
     state = setup(verbosity, test_labels, parallel)
     extra_tests = []
 
@@ -264,6 +265,7 @@ def django_tests(verbosity, interactive, failfast, keepdb, reverse,
         parallel=actual_test_processes(parallel),
         tags=tags,
         exclude_tags=exclude_tags,
+        buffer=buffer,
     )
     failures = test_runner.run_tests(
         test_labels or get_installed(),
@@ -287,6 +289,9 @@ def get_subprocess_args(options):
         subprocess_args.append('--tag=%s' % options.tags)
     if options.exclude_tags:
         subprocess_args.append('--exclude_tag=%s' % options.exclude_tags)
+    if options.buffer:
+        subprocess_args.append('-b')
+
     return subprocess_args
 
 
@@ -434,6 +439,10 @@ if __name__ == "__main__":
         '--exclude-tag', dest='exclude_tags', action='append',
         help='Do not run tests with the specified tag. Can be used multiple times.',
     )
+    parser.add_argument(
+        '-b', '--buffer', default=False, action='store_true',
+        help='Discard the output from the buffer. Only display output in case of test errors or failures.',
+    )
 
     options = parser.parse_args()
 
@@ -463,7 +472,7 @@ if __name__ == "__main__":
             options.verbosity, options.interactive, options.failfast,
             options.keepdb, options.reverse, options.modules,
             options.debug_sql, options.parallel, options.tags,
-            options.exclude_tags,
+            options.exclude_tags, options.buffer,
         )
         if failures:
             sys.exit(1)

@@ -301,7 +301,7 @@ def _run_subsuite(args):
     This helper lives at module-level and its arguments are wrapped in a tuple
     because of the multiprocessing module's requirements.
     """
-    runner_class, subsuite_index, subsuite, failfast = args
+    runner_class, subsuite_index, subsuite, failfast, buffer = args
     runner = runner_class(failfast=failfast)
     result = runner.run(subsuite)
     return subsuite_index, result.events
@@ -328,10 +328,11 @@ class ParallelTestSuite(unittest.TestSuite):
     run_subsuite = _run_subsuite
     runner_class = RemoteTestRunner
 
-    def __init__(self, suite, processes, failfast=False):
+    def __init__(self, suite, processes, failfast=False, buffer=False):
         self.subsuites = partition_suite_by_case(suite)
         self.processes = processes
         self.failfast = failfast
+        self.buffer = buffer
         super().__init__()
 
     def run(self, result):
@@ -355,7 +356,7 @@ class ParallelTestSuite(unittest.TestSuite):
             initializer=self.init_worker.__func__,
             initargs=[counter])
         args = [
-            (self.runner_class, index, subsuite, self.failfast)
+            (self.runner_class, index, subsuite, self.failfast, self.buffer)
             for index, subsuite in enumerate(self.subsuites)
         ]
         test_results = pool.imap_unordered(self.run_subsuite.__func__, args)
@@ -402,7 +403,7 @@ class DiscoverRunner:
     def __init__(self, pattern=None, top_level=None, verbosity=1,
                  interactive=True, failfast=False, keepdb=False,
                  reverse=False, debug_mode=False, debug_sql=False, parallel=0,
-                 tags=None, exclude_tags=None, **kwargs):
+                 tags=None, exclude_tags=None, buffer=False, **kwargs):
 
         self.pattern = pattern
         self.top_level = top_level
@@ -415,6 +416,7 @@ class DiscoverRunner:
         self.debug_sql = debug_sql
         self.parallel = parallel
         self.tags = set(tags or [])
+        self.buffer = buffer
         self.exclude_tags = set(exclude_tags or [])
 
     @classmethod
@@ -455,6 +457,10 @@ class DiscoverRunner:
         parser.add_argument(
             '--exclude-tag', action='append', dest='exclude_tags',
             help='Do not run tests with the specified tag. Can be used multiple times.',
+        )
+        parser.add_argument(
+            '-b', '--buffer', default=False, action='store_true',
+            help='Discard output during a successful test run. Only show output in case of test errors or failures.',
         )
 
     def setup_test_environment(self, **kwargs):
@@ -525,7 +531,7 @@ class DiscoverRunner:
         suite = reorder_suite(suite, self.reorder_by, self.reverse)
 
         if self.parallel > 1:
-            parallel_suite = self.parallel_test_suite(suite, self.parallel, self.failfast)
+            parallel_suite = self.parallel_test_suite(suite, self.parallel, self.failfast, self.buffer)
 
             # Since tests are distributed across processes on a per-TestCase
             # basis, there's no need for more processes than TestCases.
@@ -551,6 +557,7 @@ class DiscoverRunner:
     def get_test_runner_kwargs(self):
         return {
             'failfast': self.failfast,
+            'buffer': self.buffer,
             'resultclass': self.get_resultclass(),
             'verbosity': self.verbosity,
         }

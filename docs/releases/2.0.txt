@@ -196,6 +196,9 @@ Tests
 
 * Added threading support to :class:`~django.test.LiveServerTestCase`.
 
+* Added support for discarded output of test runs in case of a successful
+  outcome. This is supported by the ``-b`` or ``--buffer`` flag.
+
 URLs
 ~~~~
 

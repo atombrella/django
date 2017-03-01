@@ -198,3 +198,10 @@ class DiscoverRunnerTest(TestCase):
         self.assertEqual(runner.build_suite(['test_discovery_sample.tests_sample']).countTestCases(), 0)
         runner = DiscoverRunner(exclude_tags=['slow'])
         self.assertEqual(runner.build_suite(['test_discovery_sample.tests_sample']).countTestCases(), 4)
+
+    # def test_discard_buffer(self):
+    #     with open(sys.stdout) as stdout:
+    #         runner = DiscoverRunner(tags=['fast'], buffer=True)
+    #         # print(runner.test_runner._makeResult(runner.get_resultclass()))
+    #         self.assertTrue(True)
+    #         print(stdout.read())
