@@ -433,7 +433,7 @@ class Query:
             # Remove any aggregates marked for reduction from the subquery
             # and move them to the outer AggregateQuery.
             col_cnt = 0
-            for alias, expression in list(inner_query.annotation_select.items()):
+            for alias, expression in tuple(inner_query.annotation_select.items()):
                 if expression.is_summary:
                     expression, col_cnt = inner_query.rewrite_cols(expression, col_cnt)
                     outer_query.annotations[alias] = expression.relabeled_clone(relabels)
@@ -1327,8 +1327,8 @@ class Query:
                 # one step.
                 pos -= 1
                 if pos == -1 or fail_on_missing:
-                    field_names = list(get_field_names_from_opts(opts))
-                    available = sorted(field_names + list(self.annotation_select))
+                    field_names = tuple(get_field_names_from_opts(opts))
+                    available = sorted(field_names + tuple(self.annotation_select))
                     raise FieldError("Cannot resolve keyword '%s' into field. "
                                      "Choices are: %s" % (name, ", ".join(available)))
                 break
