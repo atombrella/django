@@ -201,6 +201,30 @@ field or an expression returning a numeric data. Both are required.
     Returns ``sum(y^2) - sum(y)^2/N`` ("sum of squares" of the dependent
     variable)  as a ``float``, or ``None`` if there aren't any matching rows.
 
+Filter over aggregate functions
+===============================
+
+.. class:: Filter(expression, condition, **extra)
+
+    PostgreSQL 9.4+ supports appending a filter directly to an aggregate function
+    to more succinctly add conditions to the rows to which the function is applied.
+    This is easier to read compared to using ``WHEN`` as the expression inside an
+    aggregate function. Any aggregate function can be used, including aggregate
+    functions defined in :mod:`django.contrib.postgres`.
+
+    .. code-block:: python
+
+        >>> from django.contrib.postgres.aggregates import Filter
+        >>> from django.db.models import Count, Q
+        >>>
+        >>> Products.objects.annotate(expensive_products=Filter(
+        >>>     expression=Count('*'), condition=Q(price__gte=100)),
+        >>>     cheap_stuff=Filter(expression=Count('*'), condition=Q(price__range=[1, 10])))
+
+    The example evaluates the aggregate function with the filter applied and counts the
+    number of product that have a price greater or equal to 100, and finds the products
+    with a price between 1 and 10.
+
 Usage examples
 ==============
 

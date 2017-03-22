@@ -76,6 +76,9 @@ Minor features
   :class:`~django.contrib.postgres.aggregates.ArrayAgg` determines if
   concatenated values will be distinct.
 
+* The new :class:`~django.contrib.postgres.aggregates.Filter` class can be
+  used to append a filter directly to an aggregate function.
+
 :mod:`django.contrib.redirects`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
