@@ -33,6 +33,15 @@ class Book(models.Model):
         return self.name
 
 
+class Evaluation(models.Model):
+    """Avg rating for books from a publisher. Used for #25643."""
+    book = models.ForeignKey(Book, null=False, blank=False, on_delete=models.CASCADE)
+    value = models.FloatField(default=0.0)
+
+    def __str__(self):
+        return '%s: %s' % (self.book.name, str(self.rating))
+
+
 class Store(models.Model):
     name = models.CharField(max_length=255)
     books = models.ManyToManyField(Book)

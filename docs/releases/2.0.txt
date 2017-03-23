@@ -172,6 +172,9 @@ Models
 
 * The new :class:`~django.db.models.functions.StrIndex` database function
   finds the starting index of a string inside another string.
+* Support for joins and aggregation is now supported in ``UPDATE`` queries.
+  This will also work in ``INSERT`` queries. SQLite has limited support for
+  this. The different backends either use a subquery or can join the tables.
 
 Requests and Responses
 ~~~~~~~~~~~~~~~~~~~~~~

@@ -2,15 +2,18 @@ import datetime
 from decimal import Decimal
 
 from django.core.exceptions import FieldDoesNotExist, FieldError
+from django.db import connection
 from django.db.models import (
-    BooleanField, CharField, Count, DateTimeField, ExpressionWrapper, F, Func,
-    IntegerField, NullBooleanField, Q, Sum, Value,
+    Avg, BooleanField, CharField, Count, DateTimeField, ExpressionWrapper, F,
+    Func, IntegerField, NullBooleanField, Q, Subquery, Sum, Value,
 )
 from django.db.models.functions import Length, Lower
 from django.test import TestCase, skipUnlessDBFeature
+from django.test.utils import CaptureQueriesContext
 
 from .models import (
-    Author, Book, Company, DepartmentStore, Employee, Publisher, Store, Ticket,
+    Author, Book, Company, DepartmentStore, Employee, Evaluation, Publisher,
+    Store, Ticket,
 )
 
 
@@ -469,8 +472,8 @@ class NonAggregateAnnotationTestCase(TestCase):
         Company(name='Django Software Foundation', motto=None, ticker_name=None, description=None).save()
         Company(name='Google', motto='Do No Evil', ticker_name='GOOG', description='Internet Company').save()
         Company(name='Yahoo', motto=None, ticker_name=None, description='Internet Company').save()
-
         class Lower(Func):
+
             function = 'LOWER'
 
         qs = Company.objects.annotate(
@@ -508,3 +511,28 @@ class NonAggregateAnnotationTestCase(TestCase):
             self.assertIs(book.is_book, True)
             self.assertIs(book.is_pony, False)
             self.assertIsNone(book.is_none)
+
+    def test_update_from(self):
+        # currently just works on SQLite
+        # MySQL can't reference the same model in an UPDATE as SELECT
+        with self.assertNumQueries(1):
+            qs = Author.objects.update(
+                age=Subquery(queryset=Author.objects.annotate(avg_age=Avg('age')).values_list('avg_age', flat=True),
+                             output_field=IntegerField()))
+        authors_qs = Author.objects.all()
+
+        self.assertQuerysetEqual(authors_qs, [
+            ('Adrian Holovaty', 34),
+            ('Jacob Kaplan-Moss', 34),
+            ('Brad Dayley', 34),
+            ('James Bennett', 34),
+            ('Jeffrey Forcier', 34),
+            ('Paul Bissex', 34),
+            ('Wesley J. Chun', 34),
+            ('Peter Norvig', 34),
+            ('Stuart Russell', 34),
+        ], transform=lambda row: (row.name, row.age), ordered=False)
+
+    def test_update_select_related(self):
+        qs = Evaluation.objects.prefetch_related('book').update(value=Avg('book__rating'))
+        print(qs.query)

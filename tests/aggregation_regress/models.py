@@ -48,6 +48,14 @@ class Book(models.Model):
         return self.name
 
 
+class Rating(models.Model):
+    book = models.ForeignKey(Book, related_name='book_relation')
+    rating = models.FloatField(default=0)
+
+    def __str__(self):
+        return '{}: {}'.format(self.book.name, self.rating)
+
+
 class Store(models.Model):
     name = models.CharField(max_length=255)
     books = models.ManyToManyField(Book)

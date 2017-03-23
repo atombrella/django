@@ -49,6 +49,10 @@ class SQLDeleteCompiler(compiler.SQLDeleteCompiler, SQLCompiler):
 
 
 class SQLUpdateCompiler(compiler.SQLUpdateCompiler, SQLCompiler):
+    # Oracle uses different syntax to handle the case of joined
+    # tables;
+    # MERGE table INTO ... WHEN MATCHED ...
+    # similar to some sort of UPSERT
     pass
 
 
