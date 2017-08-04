@@ -76,7 +76,9 @@ Minor features
 :mod:`django.contrib.postgres`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* ...
+* :class:`~django.contrib.postgres.indexes.ConcurrentIndex` can now be used to
+  create b-tree based index, or as the base-class to create PostgreSQL specific
+  indexes concurrently.
 
 :mod:`django.contrib.redirects`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

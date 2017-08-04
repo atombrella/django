@@ -38,6 +38,7 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
 
     def delete_model(self, model):
         # Run superclass action
+        self.atomic
         super().delete_model(model)
         # Clean up manually created sequence.
         self.execute("""

@@ -17,6 +17,23 @@ available from the ``django.contrib.postgres.indexes`` module.
 
     The ``pages_per_range`` argument takes a positive integer.
 
+``ConcurrentIndex``
+===================
+
+.. class:: ConcurrentIndex(**options)
+
+    Creates a B-tree index derived directly from
+    :class:`~django.db.models.Index` outside of a transaction. The class can
+    also be used as the base-class to create other PostgreSQL specific
+    indexes. The documentation describes `details and considerations`_ to
+    consider before using this index type.
+
+    .. code-block:: sql
+
+        CREATE INDEX CONCURRENTLY on TABLE (columns)
+
+    .. _details and considerations: https://www.postgresql.org/docs/current/static/sql-createindex.html#SQL-CREATEINDEX-CONCURRENTLY
+
 ``GinIndex``
 ============
 

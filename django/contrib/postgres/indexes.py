@@ -1,7 +1,8 @@
+from django.db.backends.postgresql.schema import DatabaseSchemaEditor
 from django.db.models import Index
 from django.utils.functional import cached_property
 
-__all__ = ['BrinIndex', 'GinIndex', 'GistIndex']
+__all__ = ['BrinIndex', 'ConcurrentIndex', 'GinIndex', 'GistIndex']
 
 
 class PostgresIndex(Index):
@@ -50,7 +51,17 @@ class BrinIndex(PostgresIndex):
         return with_params
 
 
-class GinIndex(PostgresIndex):
+class ConcurrentIndex(Index):
+
+    concurrently = True
+
+    def create_sql(self, model, schema_editor, using=''):
+        statement = super().create_sql(model, schema_editor, using)
+        statement.parts['name'] = 'CONCURRENTLY ' + str(statement.parts['name'])
+        return str(statement)
+
+
+class GinIndex(Index):
     suffix = 'gin'
 
     def __init__(self, *, fastupdate=None, gin_pending_list_limit=None, **kwargs):

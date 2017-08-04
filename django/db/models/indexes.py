@@ -47,10 +47,12 @@ class Index:
     def create_sql(self, model, schema_editor, using=''):
         fields = [model._meta.get_field(field_name) for field_name, _ in self.fields_orders]
         col_suffixes = [order[1] for order in self.fields_orders]
-        return schema_editor._create_index_sql(
+        sql = schema_editor._create_index_sql(
             model, fields, name=self.name, using=using, db_tablespace=self.db_tablespace,
             col_suffixes=col_suffixes,
         )
+        print(sql)
+        return sql
 
     def remove_sql(self, model, schema_editor):
         quote_name = schema_editor.quote_name

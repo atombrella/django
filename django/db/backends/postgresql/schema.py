@@ -132,3 +132,12 @@ class DatabaseSchemaEditor(BaseDatabaseSchemaEditor):
         if old_field.unique and not (new_field.db_index or new_field.unique):
             index_to_remove = self._create_index_name(model._meta.db_table, [old_field.column], suffix='_like')
             self.execute(self._delete_constraint_sql(self.sql_delete_index, model, index_to_remove))
+
+    def add_index(self, model, index):
+        if getattr(index, 'concurrently', False):
+            with self.connection.temporary_connection() as cursor:
+                autocommit = self.connection.get_autocommit()
+                self.connection.set_autocommit(True)
+                cursor.execute(index.create_sql(model, self))
+        else:
+            super().add_index(model, index)

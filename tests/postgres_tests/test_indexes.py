@@ -1,4 +1,6 @@
-from django.contrib.postgres.indexes import BrinIndex, GinIndex, GistIndex
+from django.contrib.postgres.indexes import (
+    BrinIndex, ConcurrentIndex, GinIndex, GistIndex,
+)
 from django.db import connection
 from django.test import skipUnlessDBFeature
 
@@ -140,6 +142,21 @@ class SchemaTests(PostgreSQLTestCase):
         """
         with connection.cursor() as cursor:
             return connection.introspection.get_constraints(cursor, table)
+
+    def test_concurrent_index(self):
+        # Ensure the table is there and doesn't have an index.
+        self.assertNotIn('field', self.get_constraints(IntegerArrayModel._meta.db_table))
+        # Add the index
+        index_name = 'integer_array_model_field_idx'
+        index = ConcurrentIndex(fields=['field'], name=index_name)
+        with connection.schema_editor() as editor:
+            editor.add_index(IntegerArrayModel, index)
+        constraints = self.get_constraints(IntegerArrayModel._meta.db_table)
+        self.assertEqual(constraints[index_name]['type'], ConcurrentIndex.suffix)
+        # Drop the index
+        with connection.schema_editor() as editor:
+            editor.remove_index(IntegerArrayModel, index)
+        self.assertNotIn(index_name, self.get_constraints(IntegerArrayModel._meta.db_table))
 
     def test_gin_index(self):
         # Ensure the table is there and doesn't have an index.
