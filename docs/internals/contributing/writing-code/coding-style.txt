@@ -122,9 +122,6 @@ Imports
   .. snippet::
       :filename: django/contrib/admin/example.py
 
-      # future
-      from __future__ import unicode_literals
-
       # standard library
       import json
       from itertools import chain
