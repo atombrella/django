@@ -3649,7 +3649,7 @@ class RendererTests(SimpleTestCase):
             default_renderer = CustomRenderer
 
         form = CustomForm()
-        self.assertTrue(isinstance(form.renderer, CustomForm.default_renderer))
+        self.assertIsInstance(form.renderer, CustomForm.default_renderer)
 
     def test_attribute_override(self):
         class CustomForm(Form):
