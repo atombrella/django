@@ -940,7 +940,10 @@ it. For example::
 
 This cascade behavior is customizable via the
 :attr:`~django.db.models.ForeignKey.on_delete` argument to the
-:class:`~django.db.models.ForeignKey`.
+:class:`~django.db.models.ForeignKey`. Please note that Django does not insert
+``ON DELETE`` and ``ON UPDATE`` constraints in the database schema for foreign
+key constraints, but instead relies on the database default. This is the same
+as ``NO ACTION`` (standardized by ANSI SQL) in the database.
 
 Note that :meth:`~django.db.models.query.QuerySet.delete` is the only
 :class:`~django.db.models.query.QuerySet` method that is not exposed on a
