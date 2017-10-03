@@ -1,3 +1,4 @@
+from django.template import TemplateSyntaxError
 from django.test import SimpleTestCase
 
 from ...utils import setup
@@ -12,3 +13,21 @@ class GetAvailableLanguagesTagTests(SimpleTestCase):
     def test_i18n12(self):
         output = self.engine.render_to_string('i18n12')
         self.assertEqual(output, 'de')
+
+    @setup({
+        'invalid_template': '{% load i18n %}'
+        '{% get_available_languages %}'
+    })
+    def test_no_args(self):
+        msg = "get_available_languages' requires 'as variable' (got ['get_available_languages'])"
+        with self.assertRaisesMessage(TemplateSyntaxError, msg):
+            self.engine.render_to_string('invalid_template')
+
+    @setup({
+        'invalid_template': '{% load i18n %}'
+        '{% get_available_languages as %}'
+    })
+    def test_only_as_arg(self):
+        msg = "get_available_languages' requires 'as variable' (got ['get_available_languages', 'as'])"
+        with self.assertRaisesMessage(TemplateSyntaxError, msg):
+            self.engine.render_to_string('invalid_template')

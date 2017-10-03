@@ -233,6 +233,56 @@ class I18nBlockTransTagTests(SimpleTestCase):
         output = self.engine.render_to_string('template')
         self.assertEqual(output, '%s')
 
+    @setup({
+        'invalid_blocktrans':
+        '{% load i18n %}'
+        '{% blocktrans with foo=bar context "greeting" context "greeting" %}{{ foo }}{% endblocktrans %}'
+    })
+    def test_blocktrans_duplicate_with(self):
+        msg = "The 'context' option was specified more than once."
+        with self.assertRaisesMessage(TemplateSyntaxError, msg):
+            self.engine.render_to_string('invalid_blocktrans', {'foo': 'a & c'})
+
+    @setup({
+        'invalid_blocktrans':
+        '{% load i18n %}'
+        '{% blocktrans with %}{{ foo }}{% endblocktrans %}'
+    })
+    def test_blocktrans_no_with_keyword(self):
+        msg = '"with" in %r tag needs at least one keyword argument.' % 'blocktrans'
+        with self.assertRaisesMessage(TemplateSyntaxError, msg):
+            self.engine.render_to_string('invalid_blocktrans', {'foo': 'a & c'})
+
+    @setup({
+        'invalid_blocktrans':
+        '{% load i18n %}'
+        '{% blocktrans count %}hello{% endblocktrans %}'
+    })
+    def test_blocktrans_count_missing_keyword(self):
+        msg = '"count" in %r tag expected exactly one keyword argument.' % 'blocktrans'
+        with self.assertRaisesMessage(TemplateSyntaxError, msg):
+            self.engine.render_to_string('invalid_blocktrans')
+
+    @setup({
+        'invalid_blocktrans':
+        '{% load i18n %}'
+        '{% blocktrans count foo=3 %}{% if foo %}{% endif %}{% endblocktrans %}'
+    })
+    def test_blocktrans_count_more_than_once(self):
+        msg = "'blocktrans' doesn't allow other block tags inside it"
+        with self.assertRaisesMessage(TemplateSyntaxError, msg):
+            self.engine.render_to_string('invalid_blocktrans')
+
+    @setup({
+        'invalid_blocktrans':
+        '{% load i18n %}'
+        '{% blocktrans %}{% block foo %}bar{% endblock %}{% endblocktrans %}'
+    })
+    def test_blocktrans_block_tag_inside(self):
+        msg = "blocktrans' doesn't allow other block tags (seen 'block foo') inside it"
+        with self.assertRaisesMessage(TemplateSyntaxError, msg):
+            self.engine.render_to_string('invalid_blocktrans')
+
 
 class TranslationBlockTransTagTests(SimpleTestCase):
 
