@@ -32,7 +32,7 @@ from django.http import HttpResponse
 from django.test import (
     RequestFactory, TestCase, ignore_warnings, override_settings,
 )
-from django.test.utils import patch_logger
+from django.test.utils import captured_stderr, patch_logger
 from django.utils import timezone
 
 from .models import SessionStore as CustomDatabaseSession
@@ -585,6 +585,18 @@ class FileSessionTests(SessionTestsMixin, unittest.TestCase):
         management.call_command('clearsessions')
         # ... and two are deleted.
         self.assertEqual(1, count_sessions())
+
+    @override_settings(
+        SESSION_ENGINE="django.contrib.sessions.backends.file",
+    )
+    def test_not_implemented_error(self):
+        del self.backend.clear_expired
+        with captured_stderr() as stderr:
+            management.call_command('clearsessions')
+        self.assertEqual(
+            stderr.getvalue().splitlines()[0],
+            "Session engine 'django.contrib.sessions.backends.file' doesn't support clearing expired sessions."
+        )
 
 
 class CacheSessionTests(SessionTestsMixin, unittest.TestCase):
