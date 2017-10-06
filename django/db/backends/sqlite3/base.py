@@ -168,6 +168,9 @@ class DatabaseWrapper(BaseDatabaseWrapper):
         conn.create_function("regexp", 2, _sqlite_regexp)
         conn.create_function("django_format_dtdelta", 3, _sqlite_format_dtdelta)
         conn.create_function("django_power", 2, _sqlite_power)
+        conn.create_function("django_math_cos", 1, _sqlite_math_cos)
+        conn.create_function("django_math_log", 1, _sqlite_math_log)
+        conn.create_function("django_math_sin", 1, _sqlite_math_sin)
         conn.execute('PRAGMA foreign_keys = ON')
         return conn
 
@@ -478,3 +481,20 @@ def _sqlite_regexp(re_pattern, re_string):
 
 def _sqlite_power(x, y):
     return x ** y
+
+
+def _sqlite_math_log(x, base=math.e):
+    return math.log(x) if base == math.e else math.log(x, base=base)
+
+
+def _sqlite_math_cos(x, inverse=False):
+    return math.acos(x) if inverse else math.cos(x)
+
+
+def _sqlite_math_sin(x, inverse=False):
+    return math.asin(x) if inverse else math.sin(x)
+
+
+def _sqlite_math_tan(x, inverse=False):
+    return math.atan(x) if inverse else math.tan(x)
+

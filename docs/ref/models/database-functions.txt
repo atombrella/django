@@ -822,6 +822,18 @@ Usage example::
     >>> print(author.name_upper)
     MARGARET SMITH
 
+.. _math_functions
+
+Math functions
+==============
+
+.. versionadded:: 2.1
+
+SQL defines a set of mathematical functions which you may use in queries. It
+may be faster to leverage this to the database backend, instead of calculating
+them outside of the database. SQLite supports only a small set of these functions
+natively, and instead, the work is performed in Python.
+
 .. _window-functions:
 
 Window functions
