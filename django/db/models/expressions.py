@@ -356,8 +356,7 @@ class BaseExpression:
         """
         yield self
         for expr in self.get_source_expressions():
-            if expr:
-                yield from expr.flatten()
+            yield from expr.flatten()
 
     def __eq__(self, other):
         if self.__class__ != other.__class__:
