@@ -1,8 +1,6 @@
-from django.db.models import FloatField, Func
+from django.db.models import FloatField, Func, IntegerField
 
 __all__ = ['ArcCos', 'ArcSin', 'Cos', 'Cot', 'Log', 'Log10', 'Power', 'Sin', 'Tan']
-
-# TODO most of these functions aren't supported natively in SQLIte
 
 
 class ArcCos(Func):
@@ -48,6 +46,12 @@ class Power(Func):
 
     def as_sqlite(self, compiler, connection, **extra_context):
         return super().as_sql(compiler, connection, function='django_power', **extra_context)
+
+
+class Round(Func):
+    name = 'Round'
+    function = 'ROUND'
+    output_field = IntegerField()
 
 
 class Sin(Func):

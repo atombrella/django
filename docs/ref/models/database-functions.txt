@@ -829,10 +829,59 @@ Math functions
 
 .. versionadded:: 2.1
 
-SQL defines a set of mathematical functions which you may use in queries. It
+SQL defines a set of mathematical functions, including trigonometry, which you may use in queries. It
 may be faster to leverage this to the database backend, instead of calculating
 them outside of the database. SQLite supports only a small set of these functions
-natively, and instead, the work is performed in Python.
+natively, and instead, the work is performed in Python. The precision of the
+returned result may vary depending on your database backend.
+
+``ArcCos``
+----------
+
+.. class:: ArcCos(expression)
+
+    Computes the inverse of the cosine.
+
+``Cos``
+-------
+
+.. class:: Cos(expression)
+
+    Computes cosine of the expression.
+
+``Sin``
+-------
+
+.. class:: Sin(expression)
+
+    Computes the sine of the expression.
+
+``Log``
+-------
+
+.. class:: Log(expression)
+
+    Computes the logarithm in base 10 of the expression.
+
+``Round``
+---------
+
+.. class:: Round(expression)
+
+``Sqrt``
+--------
+
+.. class:: Sqrt(expression)
+
+    Computes the square root of the argument.
+
+
+``Tan``
+-------
+
+.. class:: Sin(expression)
+
+    Computes the sin of the expression.
 
 .. _window-functions:
 
