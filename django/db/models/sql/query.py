@@ -882,7 +882,7 @@ class Query:
             alias = self.base_table
             self.ref_alias(alias)
         else:
-            alias = self.join(BaseTable(self.get_meta().db_table, None))
+            return self.join(BaseTable(self.get_meta().db_table, None))
         return alias
 
     def count_active_tables(self):
