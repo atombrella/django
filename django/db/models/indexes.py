@@ -1,7 +1,9 @@
 import hashlib
 
-from django.db import NotSupportedError
+from django.db import NotSupportedError, connection
 from django.db.backends.utils import split_identifier
+from django.db.models import F
+from django.db.models.sql import Query
 from django.utils.encoding import force_bytes
 
 __all__ = ['ExpressionIndexNotSupported', 'Index']
@@ -24,6 +26,16 @@ class Index:
             raise ValueError('At least one field is required to define an index.')
         self.fields = list(fields)
         self.expressions = []
+        self.fields_order = []
+
+        for field in fields:
+            if isinstance(field, str):
+                expression = F(field[1:]).desc() if field.startswith('-') else F(field)
+                self.expressions.append(expression)
+                self.fields_order.append(getattr(expression, 'descending', False))
+            else:
+                self.expressions.append(field)
+                self.fields_order.append(getattr(field, 'descending', False))
 
         # A list of 2-tuple with the field name and ordering ('' or 'DESC').
         self.fields_orders = [
@@ -52,6 +64,25 @@ class Index:
         return errors
 
     def create_sql(self, model, schema_editor, using=''):
+        # A Query can be used to compile expressions from the preprocessing.
+        # Since a Query-object is linked to a model, a Query-object is good
+        # enough. No need to use more classes. A Query compiles to SQL code
+        # similar to SELECT "*"."*" FROM table, however we only care about
+        # using the object to resolve the references for the columns and the
+
+        # The Query-object also provides the resolve_ref method to get the
+        # table alias
+        query = Query(model)
+        compiler = connection.ops.compiler('SQLCompiler')(query, connection, using)
+        # This needs to be resolved to either
+        columns = []
+
+        for column_expression in self.expressions:
+            expression = column_expression.resolve_expression(query)
+            column_sql, params = compiler.compile(expression)
+            params = tuple(map(schema_editor.quote_value, params))
+            columns.append(column_sql % params)
+
         fields = [model._meta.get_field(field_name) for field_name, _ in self.fields_orders]
         col_suffixes = [order[1] for order in self.fields_orders]
         return schema_editor._create_index_sql(
@@ -76,8 +107,8 @@ class Index:
 
     def clone(self):
         """Create a copy of this Index."""
-        path, _, kwargs = self.deconstruct()
-        return self.__class__(**kwargs)
+        path, args, kwargs = self.deconstruct()
+        return self.__class__(*args, **kwargs)
 
     @staticmethod
     def _hash_generator(*args):

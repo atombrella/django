@@ -884,6 +884,7 @@ class BaseDatabaseSchemaEditor:
 
     def _get_index_tablespace_sql(self, model, fields, db_tablespace=None):
         if db_tablespace is None:
+            # if len(fields) == 1 and isinstance(fields[0], Field) and fields[0].db_tablespace:
             if len(fields) == 1 and fields[0].db_tablespace:
                 db_tablespace = fields[0].db_tablespace
             elif model._meta.db_tablespace:
