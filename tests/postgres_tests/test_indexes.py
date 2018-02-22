@@ -195,6 +195,17 @@ class SchemaTests(PostgreSQLTestCase):
             editor.remove_index(CharFieldModel, index)
         self.assertNotIn(index_name, self.get_constraints(CharFieldModel._meta.db_table))
 
+    # def test_functional_gin(self):
+    #     index_name = 'integer_array_gin_params'
+    #     index = GinIndex(expressions=[Lower('field').desc()], name=index_name)
+    #     with connection.schema_editor() as editor:
+    #         editor.add_index(CharFieldModel, index)
+    #     constraints = self.get_constraints(CharFieldModel._meta.db_table)
+    #     self.assertEqual(constraints[index_name]['type'], GinIndex.suffix)
+    #     with connection.schema_editor() as editor:
+    #         editor.remove_index(CharFieldModel, index)
+    #     self.assertNotIn(index_name, self.get_constraints(CharFieldModel._meta.db_table))
+
     def test_gist_index(self):
         # Ensure the table is there and doesn't have an index.
         self.assertNotIn('field', self.get_constraints(CharFieldModel._meta.db_table))

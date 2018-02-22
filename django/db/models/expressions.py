@@ -714,10 +714,11 @@ class Col(Expression):
 
     contains_column_references = True
 
-    def __init__(self, alias, target, output_field=None):
+    def __init__(self, alias, target, output_field=None, index_col=False):
         if output_field is None:
             output_field = target
         super().__init__(output_field=output_field)
+        self.index_col = index_col
         self.alias, self.target = alias, target
 
     def __repr__(self):
@@ -725,11 +726,15 @@ class Col(Expression):
             self.__class__.__name__, self.alias, self.target)
 
     def as_sql(self, compiler, connection):
+        if self.index_col:
+            return connection.ops.quote_name(self.target.column), []
         qn = compiler.quote_name_unless_alias
         return "%s.%s" % (qn(self.alias), qn(self.target.column)), []
 
     def relabeled_clone(self, relabels):
-        return self.__class__(relabels.get(self.alias, self.alias), self.target, self.output_field)
+        return self.__class__(relabels.get(
+            self.alias, self.alias), self.target, self.output_field, self.index_col,
+        )
 
     def get_group_by_cols(self):
         return [self]

@@ -1,9 +1,14 @@
 import hashlib
 
+from django.db import NotSupportedError
 from django.db.backends.utils import split_identifier
 from django.utils.encoding import force_bytes
 
-__all__ = ['Index']
+__all__ = ['ExpressionIndexNotSupported', 'Index']
+
+
+class ExpressionIndexNotSupported(NotSupportedError):
+    pass
 
 
 class Index:
@@ -18,6 +23,8 @@ class Index:
         if not fields:
             raise ValueError('At least one field is required to define an index.')
         self.fields = list(fields)
+        self.expressions = []
+
         # A list of 2-tuple with the field name and ordering ('' or 'DESC').
         self.fields_orders = [
             (field_name[1:], 'DESC') if field_name.startswith('-') else (field_name, '')
@@ -69,8 +76,8 @@ class Index:
 
     def clone(self):
         """Create a copy of this Index."""
-        path, args, kwargs = self.deconstruct()
-        return self.__class__(*args, **kwargs)
+        path, _, kwargs = self.deconstruct()
+        return self.__class__(**kwargs)
 
     @staticmethod
     def _hash_generator(*args):

@@ -47,6 +47,7 @@ class DatabaseFeatures(BaseDatabaseFeatures):
             SET V_I = P_I;
         END;
     """
+    supports_expression_indexes = False
 
     @cached_property
     def _mysql_storage_engine(self):

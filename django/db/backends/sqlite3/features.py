@@ -2,6 +2,8 @@ from django.db import utils
 from django.db.backends.base.features import BaseDatabaseFeatures
 from django.utils.functional import cached_property
 
+from .base import Database
+
 
 class DatabaseFeatures(BaseDatabaseFeatures):
     # SQLite cannot handle us only partially reading from a cursor's result set
@@ -31,6 +33,7 @@ class DatabaseFeatures(BaseDatabaseFeatures):
     supports_cast_with_precision = False
     uses_savepoints = True
     can_release_savepoints = True
+    supports_expression_indexes = Database.sqlite_version_info >= (3, 9, 0)
 
     @cached_property
     def supports_stddev(self):

@@ -17,6 +17,7 @@ from django.db.models.fields import (
 from django.db.models.fields.related import (
     ForeignKey, ForeignObject, ManyToManyField, OneToOneField,
 )
+from django.db.models.functions import Lower
 from django.db.models.indexes import Index
 from django.db.transaction import TransactionManagementError, atomic
 from django.test import (
@@ -2614,3 +2615,25 @@ class SchemaTests(TransactionTestCase):
         with connection.schema_editor(atomic=True) as editor:
             editor.alter_db_table(Foo, Foo._meta.db_table, 'renamed_table')
         Foo._meta.db_table = 'renamed_table'
+
+    @ skipUnlessDBFeature('supports_expression_indexes')
+    def test_func_index(self):
+        func_index = Index(fields=[Lower('title').desc()], name='lorem_ipsum_idx')
+        with connection.schema_editor() as editor:
+            editor.create_model(Author)
+            editor.create_model(Book)
+            editor.add_index(Book, func_index)
+        sql = func_index.create_sql(Book, editor)
+        sql = sql.upper()
+        self.assertIn('LOWER(', sql)
+        self.assertIn('TITLE', sql)
+        self.assertIn('LOREM_IPSUM_IDX', sql)
+
+        with connection.schema_editor() as editor:
+            sql = func_index.remove_sql(Book, editor)
+            editor.remove_index(Book, func_index)
+            editor.delete_model(Book)
+            editor.delete_model(Author)
+
+        sql = sql.upper()
+        self.assertIn('LOREM_IPSUM_IDX', sql)

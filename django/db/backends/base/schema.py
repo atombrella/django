@@ -910,6 +910,7 @@ class BaseDatabaseSchemaEditor:
                 name = self._create_index_name(*args, **kwargs)
             return self.quote_name(name)
 
+        # the columns attribute needs to resolve to a generic statement
         return Statement(
             sql_create_index,
             table=Table(table, self.quote_name),
