@@ -6,7 +6,8 @@ from django.db.backends.ddl_references import (
     Columns, ForeignKeyName, IndexName, Statement, Table,
 )
 from django.db.backends.utils import split_identifier
-from django.db.models import Index
+from django.db.models import Index, Field
+from django.db.models.expressions import Col
 from django.db.transaction import TransactionManagementError, atomic
 from django.utils import timezone
 from django.utils.encoding import force_bytes
@@ -884,8 +885,8 @@ class BaseDatabaseSchemaEditor:
 
     def _get_index_tablespace_sql(self, model, fields, db_tablespace=None):
         if db_tablespace is None:
-            # if len(fields) == 1 and isinstance(fields[0], Field) and fields[0].db_tablespace:
-            if len(fields) == 1 and fields[0].db_tablespace:
+            # List of fields may contain expressions
+            if len(fields) == 1 and isinstance(fields[0], Field) and fields[0].db_tablespace:
                 db_tablespace = fields[0].db_tablespace
             elif model._meta.db_tablespace:
                 db_tablespace = model._meta.db_tablespace
@@ -901,7 +902,10 @@ class BaseDatabaseSchemaEditor:
         indexes, ...).
         """
         tablespace_sql = self._get_index_tablespace_sql(model, fields, db_tablespace=db_tablespace)
-        columns = [field.column for field in fields]
+        # This may contain expressions
+        columns = [
+            field.column if isinstance(field, Field) else field for field in fields
+        ]
         sql_create_index = sql or self.sql_create_index
         table = model._meta.db_table
 

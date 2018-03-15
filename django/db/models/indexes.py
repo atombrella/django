@@ -71,12 +71,18 @@ class Index:
         columns = []
 
         for column_expression in self.expressions:
+            # Here the columns are in compiled form, and quoted
+            # This is also needed in the ddl_references.Columns method
             expression = column_expression.resolve_expression(query)
             column_sql, params = compiler.compile(expression)
             params = tuple(map(schema_editor.quote_value, params))
             columns.append(column_sql % params)
 
-        fields = [model._meta.get_field(field_name) for field_name, _ in self.fields_orders]
+        fields = [
+            model._meta.get_field(field_name)
+            if isinstance(field_name, str) else field_name for field_name, _
+            in self.fields_orders
+        ]
         col_suffixes = [order[1] for order in self.fields_orders]
         return schema_editor._create_index_sql(
             model, fields, name=self.name, using=using, db_tablespace=self.db_tablespace,
