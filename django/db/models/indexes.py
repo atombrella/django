@@ -1,3 +1,4 @@
+import collections
 import hashlib
 
 from django.db import NotSupportedError, connection
@@ -27,20 +28,21 @@ class Index:
         self.fields = list(fields)
         self.expressions = []
         self.fields_order = []
+        self.orders = collections.OrderedDict()
 
         for field in fields:
             if isinstance(field, str):
-                expression = F(field[1:]).desc() if field.startswith('-') else F(field)
-                self.expressions.append(expression)
-                self.fields_order.append(getattr(expression, 'descending', False))
+                field_name = field[1:] if field.startswith('-') else field
+                self.orders[field_name] = field.startswith('-')
+                self.expressions.append(F(field_name))
             else:
+                self.orders[field] = getattr(field, 'descending', False)
                 self.expressions.append(field)
-                self.fields_order.append(getattr(field, 'descending', False))
 
-        # A list of 2-tuple with the field name and ordering ('' or 'DESC').
+        # A list of 2-tuple with the expression/field and ordering ('' or 'DESC').
         self.fields_orders = [
-            (field_name[1:], 'DESC') if field_name.startswith('-') else (field_name, '')
-            for field_name in self.fields
+            (field_name, 'DESC') if self.orders[field_name] else (field_name, '')
+            for field_name in self.orders
         ]
         self.name = name or ''
         if self.name:
@@ -64,17 +66,8 @@ class Index:
         return errors
 
     def create_sql(self, model, schema_editor, using=''):
-        # A Query can be used to compile expressions from the preprocessing.
-        # Since a Query-object is linked to a model, a Query-object is good
-        # enough. No need to use more classes. A Query compiles to SQL code
-        # similar to SELECT "*"."*" FROM table, however we only care about
-        # using the object to resolve the references for the columns and the
-
-        # The Query-object also provides the resolve_ref method to get the
-        # table alias
         query = Query(model)
         compiler = connection.ops.compiler('SQLCompiler')(query, connection, using)
-        # This needs to be resolved to either
         columns = []
 
         for column_expression in self.expressions:
