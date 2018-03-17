@@ -727,6 +727,7 @@ class Col(Expression):
 
     def as_sql(self, compiler, connection):
         if self.index_col:
+            # SQLite does not deal with the "." operator in index expressions
             return connection.ops.quote_name(self.target.column), []
         qn = compiler.quote_name_unless_alias
         return "%s.%s" % (qn(self.alias), qn(self.target.column)), []
@@ -777,6 +778,34 @@ class Ref(Expression):
 
     def get_group_by_cols(self):
         return [self]
+
+
+# Taken from PR #7615
+class SimpleCol(Expression):
+    contains_column_references = True
+
+    def __init__(self, target, output_field=None):
+        if output_field is None:
+            output_field = target
+        super().__init__(output_field=output_field)
+        self.target = target
+
+    def __repr__(self):
+        return '{}({})'.format(self.__class__.__name__, self.target)
+
+    def as_sql(self, compiler, connection):
+        return compiler.quote_name_unless_alias(self.target.column), []
+
+    def get_group_by_cols(self):
+        return [self]
+
+    def get_db_converters(self, connection):
+        if self.target == self.output_field:
+            return self.output_field.get_db_converters(connection)
+        return (
+            self.output_field.get_db_converters(connection) +
+            self.target.get_db_converters(connection)
+        )
 
 
 class ExpressionList(Func):

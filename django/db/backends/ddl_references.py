@@ -2,7 +2,6 @@
 Helpers to manipulate deferred DDL statements that might need to be adjusted or
 discarded within when executing a migration.
 """
-from django.db.models.expressions import Col
 
 
 class Reference:
@@ -83,12 +82,6 @@ class Columns(TableColumns):
         super().__init__(table, columns)
 
     def __str__(self):
-        def expression_str(expression, idx):
-            try:
-                return expression + self.col_suffixes[idx]
-            except IndexError:
-                return expression
-
         def col_str(column, idx):
             try:
                 return self.quote_name(column) + self.col_suffixes[idx]
@@ -96,8 +89,7 @@ class Columns(TableColumns):
                 return self.quote_name(column)
 
         return ', '.join(
-            col_str(column, idx) if isinstance(column, str)
-            else expression_str(column, idx)
+            col_str(column, idx) if isinstance(column, str) else column
             for idx, column in enumerate(self.columns)
         )
 

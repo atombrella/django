@@ -79,10 +79,14 @@ class CursorWrapper:
     def _execute(self, sql, params, *ignored_wrapper_args):
         self.db.validate_no_broken_transaction()
         with self.db.wrap_database_errors:
-            if params is None:
-                return self.cursor.execute(sql)
-            else:
-                return self.cursor.execute(sql, params)
+            try:
+                if params is None:
+                    return self.cursor.execute(sql)
+                else:
+                    return self.cursor.execute(sql, params)
+            except Exception:
+                print(sql)
+                raise
 
     def _executemany(self, sql, param_list, *ignored_wrapper_args):
         self.db.validate_no_broken_transaction()

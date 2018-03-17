@@ -3,11 +3,22 @@ import hashlib
 
 from django.db import NotSupportedError, connection
 from django.db.backends.utils import split_identifier
-from django.db.models import F
+from django.db.models.expressions import Col, F
 from django.db.models.sql import Query
 from django.utils.encoding import force_bytes
 
-__all__ = ['ExpressionIndexNotSupported', 'Index']
+__all__ = ['ExpressionIndexNotSupported', 'ExpressionIndexQuery', 'Index']
+
+
+class ExpressionIndexQuery(Query):
+
+    def resolve_ref(self, name, *args, **kwargs):
+        if not any(f.name == name for f in self.model._meta.concrete_fields):
+            raise ValueError("Invalid reference to field '%s' on model '%s'" % (name, self.model._meta.label))
+        source_field = self.model._meta.get_field(name)
+        # SQLite does not accept the "." operator in index expressions,
+        # use None to remediate this shortcoming
+        return Col(None, target=source_field, index_col=True)
 
 
 class ExpressionIndexNotSupported(NotSupportedError):
@@ -66,7 +77,7 @@ class Index:
         return errors
 
     def create_sql(self, model, schema_editor, using=''):
-        query = Query(model)
+        query = ExpressionIndexQuery(model)
         compiler = connection.ops.compiler('SQLCompiler')(query, connection, using)
         columns = []
 
@@ -80,8 +91,8 @@ class Index:
 
         fields = [
             model._meta.get_field(field_name)
-            if isinstance(field_name, str) else field_name for field_name, _
-            in self.fields_orders
+            if isinstance(field_name, str) else columns[idx] for idx, (field_name, _)
+            in enumerate(self.fields_orders)
         ]
         col_suffixes = [order[1] for order in self.fields_orders]
         return schema_editor._create_index_sql(
@@ -149,7 +160,9 @@ class Index:
         self.check_name()
 
     def __repr__(self):
-        return "<%s: fields='%s'>" % (self.__class__.__name__, ', '.join(self.fields))
+        return "<%s: fields='%s'>" % (
+            self.__class__.__name__, ', '.join(map(str, self.fields))
+        )
 
     def __eq__(self, other):
         return (self.__class__ == other.__class__) and (self.deconstruct() == other.deconstruct())

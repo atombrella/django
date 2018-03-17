@@ -6,7 +6,7 @@ import decimal
 import math
 import re
 import warnings
-from sqlite3 import dbapi2 as Database
+from sqlite3 import dbapi2 as Database, OperationalError
 
 import pytz
 
