@@ -813,7 +813,7 @@ def filesizeformat(bytes_):
     """
     try:
         bytes_ = float(bytes_)
-    except (TypeError, ValueError, UnicodeDecodeError):
+    except (TypeError, ValueError):
         value = ngettext("%(size)d byte", "%(size)d bytes", 0) % {'size': 0}
         return avoid_wrapping(value)
 
