@@ -1147,8 +1147,6 @@ class Query:
         if isinstance(filter_expr, dict):
             raise FieldError("Cannot parse keyword query as dict")
         arg, value = filter_expr
-        if not arg:
-            raise FieldError("Cannot parse keyword query %r" % arg)
         lookups, parts, reffed_expression = self.solve_lookup_type(arg)
 
         if not getattr(reffed_expression, 'filterable', True):
