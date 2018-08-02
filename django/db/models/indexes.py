@@ -12,11 +12,13 @@ class Index:
     # cross-database compatibility with Oracle)
     max_name_length = 30
 
-    def __init__(self, *, fields=(), name=None, db_tablespace=None, opclasses=()):
+    def __init__(self, *, fields=(), name=None, unique=False, db_tablespace=None, opclasses=()):
         if opclasses and not name:
             raise ValueError('An index must be named to use opclasses.')
         if not isinstance(fields, (list, tuple)):
             raise ValueError('Index.fields must be a list or tuple.')
+        if not isinstance(unique, bool):
+            raise ValueError('Index.unique must be a boolean.')
         if not isinstance(opclasses, (list, tuple)):
             raise ValueError('Index.opclasses must be a list or tuple.')
         if opclasses and len(fields) != len(opclasses):
@@ -30,6 +32,7 @@ class Index:
             for field_name in self.fields
         ]
         self.name = name or ''
+        self.unique = unique
         if self.name:
             errors = self.check_name()
             if len(self.name) > self.max_name_length:
