@@ -222,6 +222,11 @@ Models
   ``Model.delete()``. This improves the performance of autocommit by reducing
   the number of database round trips.
 
+* The ``on_delete`` argument for ``ForeignKey`` and ``OneToOneField`` now
+  accepts DB_CASCADE and DB_SETNULL. This will behave like ``DO_NOTHING`` in
+  Django, but leverage ``ON DELETE CASCADE`` or ``ON DELETE SET NULL``, via an
+  SQL constraint.
+
 Requests and Responses
 ~~~~~~~~~~~~~~~~~~~~~~
 

@@ -42,6 +42,7 @@ class A(models.Model):
     )
     cascade = models.ForeignKey(R, models.CASCADE, related_name='cascade_set')
     cascade_nullable = models.ForeignKey(R, models.CASCADE, null=True, related_name='cascade_nullable_set')
+    db_cascade = models.ForeignKey(R, models.DB_CASCADE, related_name='db_cascade_set')
     protect = models.ForeignKey(R, models.PROTECT, null=True)
     donothing = models.ForeignKey(R, models.DO_NOTHING, null=True, related_name='donothing_set')
     child = models.ForeignKey(RChild, models.CASCADE, related_name="child")
@@ -57,7 +58,7 @@ def create_a(name):
     a = A(name=name)
     for name in ('auto', 'auto_nullable', 'setvalue', 'setnull', 'setdefault',
                  'setdefault_none', 'cascade', 'cascade_nullable', 'protect',
-                 'donothing', 'o2o_setnull'):
+                 'db_cascade', 'donothing', 'o2o_setnull'):
         r = R.objects.create()
         setattr(a, name, r)
     a.child = RChild.objects.create()
@@ -126,3 +127,19 @@ class Base(models.Model):
 
 class RelToBase(models.Model):
     base = models.ForeignKey(Base, models.DO_NOTHING)
+
+
+class BaseDbCascade(models.Model):
+    pass
+
+
+class BaseDbSetNull(models.Model):
+    pass
+
+
+class RelToBaseDbCascade(models.Model):
+    base = models.ForeignKey(BaseDbCascade, models.DB_CASCADE)
+
+
+class RelToBaseDbSetNull(models.Model):
+    base = models.ForeignKey(BaseDbSetNull, models.DB_SET_NULL)
