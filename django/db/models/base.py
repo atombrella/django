@@ -234,7 +234,7 @@ class ModelBase(type):
                 if base_key in parent_links:
                     field = parent_links[base_key]
                 elif not is_proxy:
-                    attr_name = '%s_ptr' % base._meta.model_name
+                    attr_name = f'{base._meta.model_name}_ptr'
                     field = OneToOneField(
                         base,
                         on_delete=CASCADE,
@@ -937,8 +937,8 @@ class Model(metaclass=ModelBase):
         op = 'gt' if is_next else 'lt'
         order = '' if is_next else '-'
         param = getattr(self, field.attname)
-        q = Q(**{'%s__%s' % (field.name, op): param})
-        q = q | Q(**{field.name: param, 'pk__%s' % op: self.pk})
+        q = Q(**{f'{field.name}__{op}': param})
+        q = q | Q(**{field.name: param, f'pk__{op}': self.pk})
         qs = self.__class__._default_manager.using(self._state.db).filter(**kwargs).filter(q).order_by(
             '%s%s' % (order, field.name), '%spk' % order
         )
@@ -1106,11 +1106,11 @@ class Model(metaclass=ModelBase):
             if date is None:
                 continue
             if lookup_type == 'date':
-                lookup_kwargs['%s__day' % unique_for] = date.day
-                lookup_kwargs['%s__month' % unique_for] = date.month
-                lookup_kwargs['%s__year' % unique_for] = date.year
+                lookup_kwargs[f'{unique_for}__day'] = date.day
+                lookup_kwargs[f'{unique_for}__month'] = date.month
+                lookup_kwargs[f'{unique_for}__year'] = date.year
             else:
-                lookup_kwargs['%s__%s' % (unique_for, lookup_type)] = getattr(date, lookup_type)
+                lookup_kwargs[f'{unique_for}__{lookup_type}'] = getattr(date, lookup_type)
             lookup_kwargs[field] = getattr(self, field)
 
             qs = model_class._default_manager.filter(**lookup_kwargs)

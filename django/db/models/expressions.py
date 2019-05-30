@@ -22,7 +22,7 @@ class SQLiteNumericMixin:
         sql, params = self.as_sql(compiler, connection, **extra_context)
         try:
             if self.output_field.get_internal_type() == 'DecimalField':
-                sql = 'CAST(%s AS NUMERIC)' % sql
+                sql = f'CAST({sql} AS NUMERIC)'
         except FieldError:
             pass
         return sql, params
@@ -684,7 +684,7 @@ class RawSQL(Expression):
         return "{}({}, {})".format(self.__class__.__name__, self.sql, self.params)
 
     def as_sql(self, compiler, connection):
-        return '(%s)' % self.sql, self.params
+        return f'({self.sql})', self.params
 
     def get_group_by_cols(self, alias=None):
         return [self]
@@ -724,7 +724,7 @@ class Col(Expression):
 
     def as_sql(self, compiler, connection):
         qn = compiler.quote_name_unless_alias
-        return "%s.%s" % (qn(self.alias), qn(self.target.column)), []
+        return f"{qn(self.alias)}.{qn(self.target.column)}", []
 
     def relabeled_clone(self, relabels):
         return self.__class__(relabels.get(self.alias, self.alias), self.target, self.output_field)
@@ -1085,9 +1085,9 @@ class OrderBy(BaseExpression):
     def as_sql(self, compiler, connection, template=None, **extra_context):
         if not template:
             if self.nulls_last:
-                template = '%s NULLS LAST' % self.template
+                template = f'{self.template} NULLS LAST'
             elif self.nulls_first:
-                template = '%s NULLS FIRST' % self.template
+                template = f'{self.template} NULLS FIRST'
         connection.ops.check_expression_support(self)
         expression_sql, params = compiler.compile(self.expression)
         placeholders = {
